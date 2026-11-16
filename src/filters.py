@@ -44,7 +44,7 @@ def apply_base_filter(image_rgb: np.ndarray, delta_e_user: float):
 
     fc = 1.0
     if delta_e_user < 0 and delta_e_image > abs(delta_e_user):
-        fc = max(0.3, abs(delta_e_user) / delta_e_image)
+        fc = abs(delta_e_user) / delta_e_image
     elif delta_e_user > 0:
         fc = 1.0 + (abs(delta_e_user) / delta_e_image)
 
@@ -53,35 +53,6 @@ def apply_base_filter(image_rgb: np.ndarray, delta_e_user: float):
     filtered_img[:, :, 2] -= T_final
 
     return np.clip(filtered_img, 0, 255).astype(np.uint8), best_T, fc
-
-
-def apply_local_filter(image_rgb: np.ndarray, delta_e_user: float, block_size: int) -> np.ndarray:
-    """
-    Raw block-based local blue light filter (without spatial smoothing).
-    Included for ablation studies to demonstrate blocking artifacts.
-    """
-    h, w, _ = image_rgb.shape
-    filtered_img = np.zeros_like(image_rgb)
-
-    for y in range(0, h, block_size):
-        for x in range(0, w, block_size):
-            block = image_rgb[y : y + block_size, x : x + block_size]
-            filt_block, _, _ = apply_base_filter(block, delta_e_user)
-            filtered_img[y : y + block_size, x : x + block_size] = filt_block
-
-    return filtered_img
-
-
-def apply_local_global_filter(
-    image_rgb: np.ndarray, delta_e_user: float, block_size: int
-) -> np.ndarray:
-    """
-    Two-stage cascade filter (Local block filtering followed by Global filtering).
-    Included for ablation studies to evaluate over-filtering degradation.
-    """
-    local_filtered = apply_local_filter(image_rgb, delta_e_user, block_size)
-    final_img, _, _ = apply_base_filter(local_filtered, delta_e_user)
-    return final_img
 
 
 def apply_smooth_local_filter(
@@ -146,7 +117,7 @@ def apply_smooth_local_filter(
 
     fc = 1.0
     if delta_e_user < 0 and delta_e_image > abs(delta_e_user):
-        fc = max(0.3, abs(delta_e_user) / delta_e_image)
+        fc = abs(delta_e_user) / delta_e_image
     elif delta_e_user > 0:
         fc = 1.0 + (abs(delta_e_user) / delta_e_image)
 

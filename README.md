@@ -2,15 +2,15 @@
 
 [![Python 3.9+](https://img.shields.io/badge/Python-3.9%2B-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Reproducible Research](https://img.shields.io/badge/Reproducibility-Jupyter%20%26%20Modular%20Src-orange.svg)](notebooks/01_benchmark_evaluation.ipynb)
+[![Reproducible Research](https://img.shields.io/badge/Reproducibility-Jupyter%20%26%20Modular%20Src-orange.svg)](notebooks/BLISS_Experiments_and_Results.ipynb)
 
-Official implementation of **BLISS (Blue Light Interpolated Spatial Smoothing)**, a spatially-adaptive, content-aware software blue light reduction framework operating in the conical **RGb** color space[cite: 1].
+Official implementation of **BLISS (Blue Light Interpolated Spatial Smoothing)**, a spatially-adaptive, content-aware software blue light reduction framework operating in the conical **RGb** color space.
 
 ---
 
 ## Overview & Motivation
 
-High-energy short-wavelength blue light emitted by digital displays contributes to visual fatigue and circadian rhythm disruption[cite: 1]. Existing color-adaptive filtering approaches transform the standard RGB cube into a conical **RGb** space by selecting a single optimal transformation matrix globally across the entire image[cite: 1]. However, global matrix selection struggles in heterogeneous scenes (e.g., images combining bright skies, white-dominant backgrounds, and natural subjects)[cite: 1].
+High-energy short-wavelength blue light emitted by digital displays contributes to visual fatigue and circadian rhythm disruption. Existing color-adaptive filtering approaches transform the standard RGB cube into a conical **RGb** space by selecting a single optimal transformation matrix globally across the entire image. However, global matrix selection struggles in heterogeneous scenes (e.g., images combining bright skies, white-dominant backgrounds, and natural subjects).
 
 **BLISS** overcomes this limitation by transitioning from global uniform filtering to **spatially-aware local adaptation**:
 1. **Local Grid Optimization:** Partitions the input frame into spatial grid blocks (e.g., $32 \times 32$ or $64 \times 64$) and determines the optimal RGb transformation matrix for each local region.
@@ -21,7 +21,7 @@ High-energy short-wavelength blue light emitted by digital displays contributes 
 
 ## Qualitative Visual Comparison
 
-Side-by-side comparison between the **Global Baseline**[cite: 1] (top row) and the proposed **BLISS ($64 \times 64$)** method (bottom row) across increasing filter intensity thresholds ($\Delta E_{\text{user}}$):
+Side-by-side comparison between the **Global Baseline** (top row) and the proposed **BLISS ($64 \times 64$)** method (bottom row) across increasing filter intensity thresholds ($\Delta E_{\text{user}}$):
 
 ![Qualitative Visual Comparison](assets/visual_comparison.png)
 
@@ -31,12 +31,19 @@ Side-by-side comparison between the **Global Baseline**[cite: 1] (top row) and t
 
 For an input RGB image $I \in \mathbb{R}^{H \times W \times 3}$ and a spatial grid block size $B \times B$:
 
-1. **Block-Level Matrix Selection:** For each spatial block, BLISS evaluates the four canonical RGb transformation vectors $F_c \in \{[-1, 0.5, 0.5], [0.5, -1, 0.5], [0, -1, 1], [-1, 0, 1]\}$[cite: 1] and selects the matrix maximizing positive blue-channel attenuation energy $T = \max(0, F_c \cdot [R, G, B]^T)$[cite: 1].
+1. **Block-Level Matrix Selection:** For each spatial block, BLISS evaluates the four canonical RGb transformation vectors $F_c \in \{[-1, 0.5, 0.5], [0.5, -1, 0.5], [0, -1, 1], [-1, 0, 1]\}$ and selects the matrix maximizing positive blue-channel attenuation energy $T = \max(0, F_c \cdot [R, G, B]^T)$.
 2. **Spatial Matrix Field Interpolation:** The resulting coarse decision grid $G \in \mathbb{R}^{\lceil H/B \rceil \times \lceil W/B \rceil \times 3}$ is upsampled to full image resolution $(H, W)$ via **Bilinear Interpolation** (`cv2.INTER_LINEAR`), yielding a continuous, spatially smooth transformation field $\tilde{F}(x, y)$.
-3. **Adaptive Gain Scaling ($f_c$):** The global gain factor $f_c$ is computed from the mean attenuation map $\Delta E_{\text{image}} = \text{mean}(T_{\text{map}})$ and the user-defined threshold $\Delta E_{\text{user}}$[cite: 1]:
-   $$f_c = \begin{cases} \max\left(0.3, \frac{\vert{}\Delta E_{\text{user}}\vert{}}{\Delta E_{\text{image}}}\right), & \text{if } \Delta E_{\text{user}} < 0 \text{ and } \Delta E_{\text{image}} > \vert{}\Delta E_{\text{user}}\vert{} \\ 1.0 + \frac{\vert{}\Delta E_{\text{user}}\vert{}}{\Delta E_{\text{image}}}, & \text{if } \Delta E_{\text{user}} > 0 \\ 1.0, & \text{otherwise} \end{cases}$$
-[cite: 1]
-4. **Blue Channel Attenuation:** The final filtered output is obtained by subtracting $f_c \cdot T_{\text{map}}(x, y)$ from the blue channel while keeping the neutral gray axis invariant[cite: 1].
+3. **Adaptive Gain Scaling ($f_c$):** The global gain factor $f_c$ is computed from the mean attenuation map $\Delta E_{\text{image}} = \text{mean}(T_{\text{map}})$ and the user-defined threshold $\Delta E_{\text{user}}$:
+
+   ```math
+   f_c = \begin{cases}
+   \dfrac{|\Delta E_{\text{user}}|}{\Delta E_{\text{image}}}, & \text{if } \Delta E_{\text{user}} < 0 \text{ and } \Delta E_{\text{image}} > |\Delta E_{\text{user}}| \\
+   1.0 + \dfrac{|\Delta E_{\text{user}}|}{\Delta E_{\text{image}}}, & \text{if } \Delta E_{\text{user}} > 0 \\
+   1.0, & \text{otherwise}
+   \end{cases}
+   ```
+
+4. **Blue Channel Attenuation:** The final filtered output is obtained by subtracting $f_c \cdot T_{\text{map}}(x, y)$ from the blue channel while keeping the neutral gray axis invariant.
 
 ---
 
@@ -44,22 +51,22 @@ For an input RGB image $I \in \mathbb{R}^{H \times W \times 3}$ and a spatial gr
 
 ```text
 BLISS/
-├── assets/                          # Exported visual comparisons and metric trajectory plots
-│   ├── visual_comparison.png        # Two-row comparison (Global Baseline vs. BLISS)
-│   └── metric_curves/               # Per-metric plots across Delta E levels and grid sizes
+├── assets/                                  # Exported visual comparisons and metric trajectory plots
+│   ├── visual_comparison.png                # Two-row comparison (Global Baseline vs. BLISS)
+│   └── metric_curves/                       # Per-metric plots across Delta E levels and grid sizes
 ├── data/
-│   ├── sample_images/               # Sample test images for instant verification
-│   └── README.md                    # Dataset documentation and Kaggle attribution
+│   ├── sample_images/                       # Sample test images for instant verification
+│   └── README.md                            # Dataset documentation and Kaggle attribution
 ├── notebooks/
-│   └── BLISS_Experiments_and_Results.ipynb # End-to-end quantitative benchmark, tables & plots
-├── results/                         # Exported CSV benchmark logs and summary tables
+│   └── BLISS_Experiments_and_Results.ipynb  # End-to-end quantitative benchmark, tables & plots
+├── results/                                 # Exported CSV benchmark logs and summary tables
 │   ├── bliss_benchmark_results.csv
 │   └── summary_metrics_by_config.csv
-├── src/                             # Modular core implementation
+├── src/                                     # Modular core implementation
 │   ├── __init__.py
-│   ├── filters.py                   # Global baseline, ablation filters, and BLISS algorithm
-│   ├── metrics.py                   # Full-reference, CIEDE2000, Gamut Volume & NR-IQA metrics
-│   └── utils.py                     # Image I/O and visualization utilities
+│   ├── filters.py                           # Global baseline, ablation filters, and BLISS algorithm
+│   ├── metrics.py                           # Full-reference, CIEDE2000, Gamut Volume & NR-IQA metrics
+│   └── utils.py                             # Image I/O and visualization utilities
 ├── .gitignore
 ├── LICENSE
 ├── README.md
@@ -109,7 +116,7 @@ All full-scale experiments in this study are evaluated on the **Landscape Test I
 - **Benchmark Subset (`set100`):** [Landscape Test Images on Kaggle (Juan Bayón Fernández)](https://www.kaggle.com/datasets/juanbayonfernandez/landscape-test-images)
 - **Parent Dataset:** Curated from the larger [Landscape Pictures Dataset on Kaggle (Arnaud Rougetet)](https://www.kaggle.com/datasets/arnaud58/landscape-pictures)
 
-> **Reproducing Full 100-Image Results:** To keep the repository lightweight, `data/sample_images/` contains a small subset of representative images for immediate execution. To reproduce the complete 100-image benchmark, download `set100` from the Kaggle link above, extract it to `data/set100/`, and set `DATASET_PATH = os.path.join(PROJECT_ROOT, "data", "set100")` in `notebooks/01_benchmark_evaluation.ipynb`.
+> **Reproducing Full 100-Image Results:** To keep the repository lightweight, `data/sample_images/` contains a small subset of representative images for immediate execution. To reproduce the complete 100-image benchmark, download `set100` from the Kaggle link above, extract it to `data/set100/`, and set `DATASET_PATH = os.path.join(PROJECT_ROOT, "data", "set100")` in `notebooks/BLISS_Experiments_and_Results.ipynb`.
 
 ---
 
@@ -122,7 +129,7 @@ The evaluation pipeline computes a comprehensive suite of objective, perceptual,
 
 | Category | Metric | Optimization Direction |
 | :--- | :--- | :--- |
-| **Structural Fidelity** | PSNR, SSIM | Higher is Better ($\uparrow$) |
+| **Structural Fidelity** | PSNR, SSIM (Overall RGB & Blue Channel) | Higher is Better ($\uparrow$) |
 | **Gradient Distortion** | GMSD (Gradient Magnitude Similarity Deviation) | Lower is Better ($\downarrow$) |
 | **Color & Spectral Attenuation** | Blue Light Absorption Ratio | Higher is Better ($\uparrow$) |
 | **Perceptual Color & Gamut** | CIE $\Delta E_{2000}$, 3D Gamut Volume Difference | Lower is Better ($\downarrow$) |
@@ -138,13 +145,13 @@ If you find this code or methodology useful in your research, please cite our wo
 ```bibtex
 @article{bliss2026,
   title   = {BLISS: Blue Light Interpolated Spatial Smoothing for Spatially-Adaptive Blue Light Reduction},
-  author  = {Your Name and Co-Authors},
-  journal = {Journal Name (Under Review)},
+  author  = {Amirreza Raei and Azadeh Mansouri},
+  journal = {International Conference on Signal Processing and Intelligent Systems (ICSPIS 2026) (Under Review)},
   year    = {2026}
 }
 ```
 
-This work builds upon the conical **RGb** color-space transformation framework introduced in *"An Optimized, Color-Adaptive Blue Light Filter"*[cite: 1].
+This work builds upon the conical **RGb** color-space transformation framework introduced in *"An Optimized, Color-Adaptive Blue Light Filter"*.
 
 ---
 
