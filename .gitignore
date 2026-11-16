@@ -318,3 +318,7 @@ data/set100/097.jpg
 data/set100/098.jpg
 data/set100/099.jpg
 data/set100/100.jpg
+
+# Local full-scale paper benchmark notebook & outputs (excluded from GitHub)
+notebooks/Local_Paper_100_Benchmark.ipynb
+paper_outputs/
