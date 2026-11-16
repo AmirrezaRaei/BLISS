@@ -35,13 +35,13 @@ For an input RGB image $I \in \mathbb{R}^{H \times W \times 3}$ and a spatial gr
 2. **Spatial Matrix Field Interpolation:** The resulting coarse decision grid $G \in \mathbb{R}^{\lceil H/B \rceil \times \lceil W/B \rceil \times 3}$ is upsampled to full image resolution $(H, W)$ via **Bilinear Interpolation** (`cv2.INTER_LINEAR`), yielding a continuous, spatially smooth transformation field $\tilde{F}(x, y)$.
 3. **Adaptive Gain Scaling ($f_c$):** The global gain factor $f_c$ is computed from the mean attenuation map $\Delta E_{\text{image}} = \text{mean}(T_{\text{map}})$ and the user-defined threshold $\Delta E_{\text{user}}$:
 
-   ```math
-   f_c = \begin{cases}
-   \dfrac{|\Delta E_{\text{user}}|}{\Delta E_{\text{image}}}, & \text{if } \Delta E_{\text{user}} < 0 \text{ and } \Delta E_{\text{image}} > |\Delta E_{\text{user}}| \\
-   1.0 + \dfrac{|\Delta E_{\text{user}}|}{\Delta E_{\text{image}}}, & \text{if } \Delta E_{\text{user}} > 0 \\
-   1.0, & \text{otherwise}
-   \end{cases}
-   ```
+```math
+f_c = \begin{cases}
+\dfrac{|\Delta E_{\text{user}}|}{\Delta E_{\text{image}}}, & \text{if } \Delta E_{\text{user}} < 0 \text{ and } \Delta E_{\text{image}} > |\Delta E_{\text{user}}| \\
+1.0 + \dfrac{|\Delta E_{\text{user}}|}{\Delta E_{\text{image}}}, & \text{if } \Delta E_{\text{user}} > 0 \\
+1.0, & \text{otherwise}
+\end{cases}
+```
 
 4. **Blue Channel Attenuation:** The final filtered output is obtained by subtracting $f_c \cdot T_{\text{map}}(x, y)$ from the blue channel while keeping the neutral gray axis invariant.
 
