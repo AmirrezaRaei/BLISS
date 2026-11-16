@@ -81,7 +81,7 @@ BLISS/
 Clone the repository and install the required dependencies:
 
 ```bash
-git clone [https://github.com/](https://github.com/)<your-username>/BLISS.git
+git clone [https://github.com/](https://github.com/)<AmirrezaRaei>/BLISS.git
 cd BLISS
 pip install -r requirements.txt
 ```
