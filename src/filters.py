@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import math
 
 # Four transformation matrices defined in the base RGb color-space model
 FILTER_MATRICES = [
@@ -78,7 +79,8 @@ def apply_smooth_local_filter(
     h, w, _ = image_rgb.shape
     img_float = image_rgb.astype(np.float32)
 
-    grid_h, grid_w = (h // block_size) + 1, (w // block_size) + 1
+    grid_h = math.ceil(h / block_size)
+    grid_w = math.ceil(w / block_size)
     fc_grid = np.zeros((grid_h, grid_w, 3), dtype=np.float32)
 
     for y in range(0, h, block_size):
