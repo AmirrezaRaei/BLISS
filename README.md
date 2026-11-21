@@ -29,6 +29,8 @@ Side-by-side comparison between the **Global Baseline** (top row) and the propos
 
 ## Methodology Pipeline
 
+![BLISS Architecture Pipeline](assets/bliss_pipeline_complete_dark.png)
+
 For an input RGB image $I \in \mathbb{R}^{H \times W \times 3}$ and a spatial grid block size $B \times B$:
 
 1. **Block-Level Matrix Selection:** For each spatial block, BLISS evaluates the four canonical RGb transformation vectors $F_c \in \{[-1, 0.5, 0.5], [0.5, -1, 0.5], [0, -1, 1], [-1, 0, 1]\}$ and selects the matrix maximizing positive blue-channel attenuation energy $T = \max(0, F_c \cdot [R, G, B]^T)$.
